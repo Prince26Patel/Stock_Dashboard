@@ -1,0 +1,284 @@
+import React, { useState, useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './Dashboard.css';
+import StockForm from './StockForm';
+import { useNavigate } from 'react-router-dom';
+import InvestmentChart from '../components/InvestmentChart';
+import axios from 'axios';
+
+const Dashboard = () => {
+  const [stocks, setStocks] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [formMode, setFormMode] = useState('add');
+  const [currentStock, setCurrentStock] = useState(null);
+  const [username, setUsername] = useState('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const namee = localStorage.getItem('username');
+    const storedUser = localStorage.getItem('email'); // Changed to email
+    if(namee){
+      setUsername(namee);
+    }
+    if (storedUser) {
+      fetchStocks(storedUser); // Fetch stocks for the user
+    } else {
+      alert("No user logged in. Redirecting to login.");
+      navigate('/login-signup');
+    }
+  }, []);
+  const fetchStocks = async (email) => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/stocks/all?email=${email}`);
+      const data = response.data;
+      // Validate and ensure data integrity
+      const validatedData = data.map((stock) => ({
+        ...stock,
+        buyPrice: stock.buyPrice || 0,
+        currentPrice: stock.currentPrice || 0,
+        quantity: stock.quantity || 0
+      }));
+
+      setStocks(validatedData);
+      console.log('Fetched stocks:', validatedData);
+    } catch (error) {
+      console.error('Error fetching stocks:', error.response || error.message);
+      alert('Failed to fetch stocks. Please try again later.');
+    }
+  };
+  const handleHome = () => {
+    navigate("/"); 
+  };
+  const handleFormSubmit = async (stock, mode) => {
+    try {
+      const email = localStorage.getItem('email');
+      if (mode === 'add') {
+        const response = await axios.post('http://localhost:8080/api/stocks/add', {
+          email, 
+          stockName: stock.name,
+          ticker: stock.ticker,
+          quantity: stock.quantity
+        });
+        setStocks((prevStocks) => [...prevStocks, response.data]);
+      } else if (mode === 'edit') {
+        try {
+          const response = await axios.put('http://localhost:8080/api/stocks/edit', {
+            email, 
+            ticker: stock.ticker,
+            newQuantity: stock.quantity
+          });
+          // Update the stock list dynamically using the ticker
+          setStocks((prevStocks) =>
+            prevStocks.map((s) =>
+              s.ticker === stock.ticker ? { ...s, ...response.data } : s
+            )
+          );
+        } catch (error) {
+          console.error("Error editing stock:", error);
+        }
+      }
+      else if (mode === 'delete') {
+        const response = await axios.delete('http://localhost:8080/api/stocks/delete', {
+          data: { email, ticker: stock.ticker } // Pass the email and ticker for deletion
+        });
+        setStocks((prevStocks) =>
+          prevStocks.filter((s) => s.ticker !== stock.ticker) // Remove the stock based on ticker
+        );
+      }
+      setShowForm(false);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Failed to perform the operation. Please try again later.');
+    }
+  };
+  const handleLogout = () => {
+    localStorage.removeItem('email');  // Remove email from localStorage
+    localStorage.removeItem('stocks');
+    alert(`Goodbye, ${username}! You have been logged out.`);
+    navigate('/login-signup');
+  };
+  // Calculate total invested, current value,
+  const totalInvested = stocks.reduce(
+    (sum, stock) => sum + (stock.buyPrice * stock.quantity || 0),
+    0
+  );
+  const totalCurrentValue = stocks.reduce(
+    (sum, stock) => sum + (stock.currentPrice * stock.quantity || 0),
+    0
+  );
+  const profitLoss = totalCurrentValue - totalInvested;
+  const ratio = totalInvested > 0 ? (totalCurrentValue / totalInvested).toFixed(2) : '0.00';
+  localStorage.setItem('overallInvested', totalInvested);
+  localStorage.setItem('overallCurrentValue', totalCurrentValue);
+  localStorage.setItem('profitLossPercentage', profitLoss);
+  return (
+    <div className="dashboard">
+      <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+  <a className="navbar-brand" href="#">InvestTrackr</a>
+  <button
+    className="navbar-toggler"
+    type="button"
+    data-bs-toggle="collapse"
+    data-bs-target="#navbarNav"
+    aria-controls="navbarNav"
+    aria-expanded="false"
+    aria-label="Toggle navigation"
+    >
+    <span className="navbar-toggler-icon"></span>
+  </button>
+  <div className="collapse navbar-collapse" id="navbarNav">
+    <h2 className="ms-auto text-white">{`Welcome, ${username}!`}</h2>
+    <div className="ms-auto d-flex flex-wrap">
+      {/* Buttons for larger screens */}
+      <div className="d-none d-lg-flex">
+        <button className="btn signup-btn me-2" onClick={handleHome}>
+          Home
+        </button>
+        <button
+          className="btn btn-primary me-2"
+          onClick={() => {
+            setFormMode('add');
+            setShowForm(true);
+          }}
+        >
+          Add Stock
+        </button>
+        <button
+          className="btn btn-warning me-2"
+          onClick={() => {
+            setFormMode('edit');
+            setShowForm(true);
+          }}
+        >
+          Edit Stock
+        </button>
+        <button
+          className="btn btn-danger me-2"
+          onClick={() => {
+            setFormMode('delete');
+            setShowForm(true);
+          }}
+        >
+          Delete Stock
+        </button>
+        <button className="btn btn-secondary me-2" onClick={handleLogout}>
+          Log Out
+        </button>
+      </div>
+      {/* Dropdown menu for smaller screens */}
+      <div className="d-lg-none">
+        <button
+          className="btn btn-secondary dropdown-toggle"
+          type="button"
+          id="dropdownMenuButton"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          Menu
+        </button>
+        <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <li><button className="dropdown-item" onClick={handleHome}>Home</button></li>
+          <li><button className="dropdown-item" onClick={() => { setFormMode('add'); setShowForm(true); }}>Add Stock</button></li>
+          <li><button className="dropdown-item" onClick={() => { setFormMode('edit'); setShowForm(true); }}>Edit Stock</button></li>
+          <li><button className="dropdown-item" onClick={() => { setFormMode('delete'); setShowForm(true); }}>Delete Stock</button></li>
+          <li><button className="dropdown-item" onClick={handleLogout}>Log Out</button></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+      <div className="metrics-container p-4">
+        <div className="row">
+          <div className="col-md-3">
+            <h5>Total Invested</h5>
+            <p>${totalInvested.toFixed(2)}</p>
+          </div>
+          <div className="col-md-3">
+            <h5>Current Value</h5>
+            <p>${totalCurrentValue.toFixed(2)}</p>
+          </div>
+          <div className="col-md-3">
+            <h5>Total Profit/Loss</h5>
+            <p style={{ color: profitLoss >= 0 ? 'green' : 'red' }}>${profitLoss.toFixed(2)}</p>
+          </div>
+          <div className="col-md-3">
+            <h5>Ratio (Current/Invested)</h5>
+            <p>{ratio}</p>
+          </div>
+        </div>
+      </div>
+      <div className="chart-section">
+        <InvestmentChart />
+      </div>
+      <div className="stock-list p-4">
+  <h5>My Holdings</h5>
+  <div className="table-responsive">
+    <table className="table table-striped table-hover">
+      <thead className="table-info">
+        <tr>
+          <th>Name</th>
+          <th>Ticker</th>
+          <th>Buying Price</th>
+          <th>Quantity</th>
+          <th>Current Price</th>
+          <th>Total Invested</th>
+          <th>Current Value</th>
+          <th>Profit/Loss</th>
+          <th>Ratio</th>
+        </tr>
+      </thead>
+      <tbody>
+        {stocks.length > 0 ? (
+          stocks.map((stock) => {
+            const stockInvested = stock.buyPrice * stock.quantity || 0;
+            const stockCurrentValue = stock.currentPrice * stock.quantity || 0;
+            const stockProfitLoss = stockCurrentValue - stockInvested;
+            const stockRatio = stockInvested > 0
+              ? (stockCurrentValue / stockInvested).toFixed(2)
+              : '0.00';
+            return (
+              <tr
+                key={stock.id}
+                style={{
+                  backgroundColor: stock.id % 2 === 0 ? '#FFFACD' : '#ffffff',
+                }}
+              >
+                <td>{stock.stockName}</td>
+                <td>{stock.ticker}</td>
+                <td>${stock.buyPrice.toFixed(2)}</td>
+                <td>{stock.quantity}</td>
+                <td>${stock.currentPrice.toFixed(2)}</td>
+                <td>${stockInvested.toFixed(2)}</td>
+                <td>${stockCurrentValue.toFixed(2)}</td>
+                <td
+                  style={{
+                    color: stockProfitLoss >= 0 ? 'green' : 'red',
+                  }}
+                >
+                  ${stockProfitLoss.toFixed(2)}
+                </td>
+                <td>{stockRatio}</td>
+              </tr>
+            );
+          })
+        ) : (
+          <tr>
+            <td colSpan="9">No stocks available</td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
+      {showForm && (
+        <StockForm
+          mode={formMode}
+          stocks={stocks}
+          onSubmit={handleFormSubmit}
+          onClose={() => setShowForm(false)}
+        />
+      )}
+    </div>
+  );
+};
+export default Dashboard;
