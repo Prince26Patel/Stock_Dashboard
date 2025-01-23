@@ -16,7 +16,8 @@ const LoginSignup = () => {
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();  // Initialize navigate
 
-  const API_BASE_URL = "http://localhost:8080/api/auth";
+ const API_BASE_URL = "https://gregarious-dedication-production.up.railway.app/api/auth";
+
   
 
   // Optional: Any side effects can be handled here
