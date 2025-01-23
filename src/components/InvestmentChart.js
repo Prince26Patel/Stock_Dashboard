@@ -47,7 +47,7 @@ const InvestmentChart = () => {
 
     try {
       // Store data in backend
-      await axios.post('http://localhost:8080/api/investments', investmentData);
+      await axios.post('http://gregarious-dedication-production.up.railway.app/api/investments', investmentData);
       console.log('Investment added automatically');
       fetchInvestmentHistory(email);
     } catch (error) {
@@ -57,7 +57,7 @@ const InvestmentChart = () => {
 
   const fetchInvestmentHistory = async (email) => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/investments/${email}`);
+      const response = await axios.get(`http://gregarious-dedication-production.up.railway.app/api/investments/${email}`);
       const data = response.data;
       const dates = data.map((item) => item.date);
       const profitLossPercentages = data.map((item) => item.profitLossPercentage);
