@@ -29,7 +29,7 @@ const Dashboard = () => {
   }, []);
   const fetchStocks = async (email) => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/stocks/all?email=${email}`);
+      const response = await axios.get(`http://gregarious-dedication-production.up.railway.app/api/stocks/all?email=${email}`);
       const data = response.data;
       // Validate and ensure data integrity
       const validatedData = data.map((stock) => ({
@@ -53,7 +53,7 @@ const Dashboard = () => {
     try {
       const email = localStorage.getItem('email');
       if (mode === 'add') {
-        const response = await axios.post('http://localhost:8080/api/stocks/add', {
+        const response = await axios.post('http://gregarious-dedication-production.up.railway.app/api/stocks/add', {
           email, 
           stockName: stock.name,
           ticker: stock.ticker,
@@ -62,7 +62,7 @@ const Dashboard = () => {
         setStocks((prevStocks) => [...prevStocks, response.data]);
       } else if (mode === 'edit') {
         try {
-          const response = await axios.put('http://localhost:8080/api/stocks/edit', {
+          const response = await axios.put('http://gregarious-dedication-production.up.railway.app/api/stocks/edit', {
             email, 
             ticker: stock.ticker,
             newQuantity: stock.quantity
@@ -78,7 +78,7 @@ const Dashboard = () => {
         }
       }
       else if (mode === 'delete') {
-        const response = await axios.delete('http://localhost:8080/api/stocks/delete', {
+        const response = await axios.delete('http://gregarious-dedication-production.up.railway.app/api/stocks/delete', {
           data: { email, ticker: stock.ticker } // Pass the email and ticker for deletion
         });
         setStocks((prevStocks) =>
