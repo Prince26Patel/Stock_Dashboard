@@ -7,6 +7,9 @@ const InvestmentChart = () => {
   const [chartData, setChartData] = useState({});
   const [email, setEmail] = useState('');
 
+  // Hardcoded backend URL
+  const BASE_URL = 'https://gregarious-dedication-production.up.railway.app';
+
   useEffect(() => {
     const storedEmail = localStorage.getItem('email');
     if (storedEmail) {
@@ -27,10 +30,10 @@ const InvestmentChart = () => {
     const email = localStorage.getItem('email');
     const date = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
 
-    console.log("localStorage totalInvested:", totalInvested);
-    console.log("localStorage totalCurrentValue:", totalCurrentValue);
-    console.log("localStorage profitLossPercentage:", profitLossPercentage);
-    console.log("localStorage email:", email);
+    console.log('localStorage totalInvested:', totalInvested);
+    console.log('localStorage totalCurrentValue:', totalCurrentValue);
+    console.log('localStorage profitLossPercentage:', profitLossPercentage);
+    console.log('localStorage email:', email);
 
     if (!email || isNaN(totalInvested) || isNaN(totalCurrentValue) || isNaN(profitLossPercentage)) {
       console.warn('Some investment data is missing or invalid in localStorage.');
@@ -47,7 +50,7 @@ const InvestmentChart = () => {
 
     try {
       // Store data in backend
-      await axios.post('http://gregarious-dedication-production.up.railway.app/api/investments', investmentData);
+      await axios.post(`${BASE_URL}/api/investments`, investmentData);
       console.log('Investment added automatically');
       fetchInvestmentHistory(email);
     } catch (error) {
@@ -57,7 +60,7 @@ const InvestmentChart = () => {
 
   const fetchInvestmentHistory = async (email) => {
     try {
-      const response = await axios.get(`http://gregarious-dedication-production.up.railway.app/api/investments/${email}`);
+      const response = await axios.get(`${BASE_URL}/api/investments/${email}`);
       const data = response.data;
       const dates = data.map((item) => item.date);
       const profitLossPercentages = data.map((item) => item.profitLossPercentage);
