@@ -8,7 +8,7 @@ const InvestmentChart = () => {
   const [email, setEmail] = useState('');
 
   // Hardcoded backend URL
-  const BASE_URL = 'https://gregarious-dedication-production.up.railway.app';
+  const BASE_URL = 'https://prolific-fascination-production.up.railway.app';
 
   useEffect(() => {
     const storedEmail = localStorage.getItem('email');
