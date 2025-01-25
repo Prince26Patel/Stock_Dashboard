@@ -118,26 +118,41 @@ const Dashboard = () => {
   return (
     <div className="dashboard">
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-        <a className="navbar-brand" href="#">InvestTrackr</a>
+  <a className="navbar-brand" href="#">InvestTrackr</a>
+  <button
+    className="navbar-toggler"
+    type="button"
+    data-bs-toggle="collapse"
+    data-bs-target="#navbarNav"
+    aria-controls="navbarNav"
+    aria-expanded="false"
+    aria-label="Toggle navigation"
+  >
+    <span className="navbar-toggler-icon"></span>
+  </button>
+  <div className="collapse navbar-collapse" id="navbarNav">
+    <h2 className="ms-auto text-white">{`Welcome, ${username}!`}</h2>
+    <div className="ms-auto">
+      {/* Dropdown Menu */}
+      <div className="dropdown">
         <button
-          className="navbar-toggler"
+          className="btn btn-secondary dropdown-toggle"
           type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
+          id="dropdownMenuButton"
+          data-bs-toggle="dropdown"
           aria-expanded="false"
-          aria-label="Toggle navigation"
         >
-          <span className="navbar-toggler-icon"></span>
+          Actions
         </button>
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <h2 className="ms-auto text-white">{`Welcome, ${username}!`}</h2>
-          <div className="ms-auto d-flex flex-wrap">
-            <button className="btn signup-btn me-2" onClick={handleHome}>
+        <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+          <li>
+            <button className="dropdown-item" onClick={handleHome}>
               Home
             </button>
+          </li>
+          <li>
             <button
-              className="btn btn-primary me-2"
+              className="dropdown-item"
               onClick={() => {
                 setFormMode('add');
                 setShowForm(true);
@@ -145,8 +160,10 @@ const Dashboard = () => {
             >
               Add Stock
             </button>
+          </li>
+          <li>
             <button
-              className="btn btn-warning me-2"
+              className="dropdown-item"
               onClick={() => {
                 setFormMode('edit');
                 setShowForm(true);
@@ -154,8 +171,10 @@ const Dashboard = () => {
             >
               Edit Stock
             </button>
+          </li>
+          <li>
             <button
-              className="btn btn-danger me-2"
+              className="dropdown-item"
               onClick={() => {
                 setFormMode('delete');
                 setShowForm(true);
@@ -163,12 +182,18 @@ const Dashboard = () => {
             >
               Delete Stock
             </button>
-            <button className="btn btn-secondary me-2" onClick={handleLogout}>
+          </li>
+          <li>
+            <button className="dropdown-item" onClick={handleLogout}>
               Log Out
             </button>
-          </div>
-        </div>
-      </nav>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
       <div className="metrics-container p-4">
         <div className="row">
           <div className="col-md-3">
